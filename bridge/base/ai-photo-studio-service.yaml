@@ -1,0 +1,21 @@
+# check if there is at least one published port
+
+#! ai-photo-studio-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: ai-photo-studio-published
+    namespace: finalproject
+    labels:
+        com.docker.compose.project: finalproject
+        com.docker.compose.service: ai-photo-studio
+spec:
+    selector:
+        com.docker.compose.project: finalproject
+        com.docker.compose.service: ai-photo-studio
+    ports:
+        - name: ai-photo-s-8502
+          port: 8502
+          protocol: TCP
+          targetPort: ai-photo-s-8502

@@ -1,0 +1,16 @@
+services:
+  ai-photo-studio:
+    build: .
+    image: ai-photo-studio
+    container_name: ai-photo-studio
+    restart: unless-stopped
+    ports:
+      - "8502:8502"
+    env_file:
+      - .env
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./generated:/app/generated
+      - ./uploads:/app/uploads
+    command: streamlit run app.py --server.port 8502 --server.address 0.0.0.0
