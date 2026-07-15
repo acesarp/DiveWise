@@ -6,6 +6,7 @@ __pycache__/
 *.exe
 *.jpg
 *.jpeg
+*.png
 
 # C extensions
 *.so
@@ -157,6 +158,7 @@ activemq-data/
 .env
 .envrc
 .venv
+.venv/
 env/
 venv/
 ENV/
