@@ -8,7 +8,7 @@ class RetrievalService:
         self.embedding_service = embedding_service
         self.vector_store = vector_store
 
-    def retrieve(self, question: str, top_k: int = 5,   ):
+    def retrieve(self, question: str, top_k: int = 5):
         embedding = self.embedding_service.create_embedding(question)
 
         return self.vector_store.search(embedding=embedding, top_k=top_k,)

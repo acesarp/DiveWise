@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 @dataclass
 class Document:
@@ -6,3 +6,4 @@ class Document:
     file_path: str
     page_count: int
     text: str
+    page_texts: list[str] = field(default_factory=list)

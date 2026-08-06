@@ -2,6 +2,13 @@ from services.document_loader import DocumentLoader
 from services.chunker import Chunker
 from services.embedding_service import EmbeddingService
 from services.vector_store import VectorStore
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class KnowledgeBaseStatistics:
+    documents: int
+    pages: int
+    chunks: int
 
 
 class KnowledgeBaseService:
@@ -16,17 +23,19 @@ class KnowledgeBaseService:
         self.chunks = []
 
     def initialize(self):
+        available_document_names = self.loader.get_document_names()
+        indexed_document_names = self.vector_store.get_document_names()
+        new_document_names = available_document_names - indexed_document_names
 
-        self.documents = self.loader.load_documents()
-        # Database already exists
-        if self.vector_store.count() > 0:
-            return
+        # Add only newly discovered PDFs. Existing documents are neither cleared
+        # nor re-embedded; PDFs in this project are treated as immutable.
+        if new_document_names:
+            documents_to_index = self.loader.load_documents(new_document_names)
+            self.chunks = self.chunker.create_chunks(documents_to_index)
+            embeddings = self.embedding_service.create_embeddings(self.chunks)
+            self.vector_store.add_chunks(self.chunks, embeddings)
 
-        # First run
-        self.documents = self.loader.load_documents()
-        self.chunks = self.chunker.create_chunks(self.documents)
-        embeddings = self.embedding_service.create_embeddings(self.chunks)
-        self.vector_store.add_chunks(self.chunks, embeddings)
+        self.documents = self.vector_store.get_documents()
 
     def get_documents(self):
         return self.documents
@@ -36,3 +45,10 @@ class KnowledgeBaseService:
 
     def get_document_count(self):
         return len(self.documents)
+
+    def get_statistics(self) -> KnowledgeBaseStatistics:
+        return KnowledgeBaseStatistics(
+            documents=self.get_document_count(),
+            pages=sum(document.page_count for document in self.documents),
+            chunks=self.get_chunk_count(),
+        )

@@ -11,21 +11,16 @@ class Chunker:
         chunks: list[Chunk] = []
 
         for document in documents:
-            text = document.text
-
-            start = 0
-
-            while start < len(text):
-                end = start + self.CHUNK_SIZE
-
-                chunk_text = text[start:end]
-
-                chunks.append(Chunk(id=str(uuid.uuid4()),
-                                                    document_name=document.file_name,
-                                                    page_number=0,
-                                                    text=chunk_text)
-                                        )
-
-                start += self.CHUNK_SIZE - self.CHUNK_OVERLAP
+            # Keep page provenance so citations in the UI are meaningful.
+            for page_number, text in enumerate(document.page_texts or [document.text], start=1):
+                start = 0
+                while start < len(text):
+                    chunk_text = text[start:start + self.CHUNK_SIZE]
+                    chunks.append(Chunk(id=str(uuid.uuid4()),
+                                            document_name=document.file_name,
+                                            page_number=page_number,
+                                            text=chunk_text)
+                                            )
+                    start += self.CHUNK_SIZE - self.CHUNK_OVERLAP
 
         return chunks

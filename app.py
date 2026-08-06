@@ -9,7 +9,6 @@ st.set_page_config(page_title="DiveWise AI", page_icon="🌊", layout="wide")
 
 @st.cache_resource
 def load_services() -> tuple[KnowledgeBaseService, ChatService]:
-
     knowledge_base = KnowledgeBaseService()
     knowledge_base.initialize()
 
@@ -24,7 +23,6 @@ def initialize_session():
 
 
 def render_sidebar(knowledge_base: KnowledgeBaseService):
-
     stats = knowledge_base.get_statistics()
 
     st.sidebar.title("🌊 DiveWise AI")
@@ -108,8 +106,12 @@ def render_documents( knowledge_base: KnowledgeBaseService):
 def main():
     initialize_session()
 
-    with st.spinner( "Loading knowledge base..." ):
-        knowledge_base, chat_service = (load_services())
+    try:
+        with st.spinner("Loading knowledge base..."):
+            knowledge_base, chat_service = load_services()
+    except RuntimeError as error:
+        st.error(str(error))
+        st.stop()
 
     st.title("🌊 DiveWise AI")
     st.caption("Your AI-powered scuba diving knowledge assistant."    )
