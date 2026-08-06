@@ -1,4 +1,5 @@
 import os
+from collections.abc import Callable
 
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -20,10 +21,19 @@ class EmbeddingService:
         return response.data[0].embedding
 
 
-    def create_embeddings(self, chunks) -> list[list[float]]:
+    def create_embeddings(
+        self,
+        chunks,
+        progress_callback: Callable[[int, int, str], None] | None = None,
+    ) -> list[list[float]]:
         embeddings = []
+        total_chunks = len(chunks)
 
-        for chunk in chunks:
+        for index, chunk in enumerate(chunks, start=1):
+            if progress_callback:
+                progress_callback(index - 1, total_chunks, "Creating embeddings")
             embeddings.append(self.create_embedding(chunk.text) )
+            if progress_callback:
+                progress_callback(index, total_chunks, "Creating embeddings")
 
         return embeddings

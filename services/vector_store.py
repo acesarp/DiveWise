@@ -6,6 +6,7 @@ from models.search_result import SearchResult
 
 class VectorStore:
     COLLECTION_NAME = "divewise"
+    BATCH_SIZE = 1_000
 
     def __init__(self, db_path: str = "data/chroma_db"):
         self.client = PersistentClient(path=db_path)
@@ -13,11 +14,21 @@ class VectorStore:
 
 
     def add_chunks(self, chunks: list[Chunk], embeddings: list[list[float]]    ) -> None:
-        self.collection.add(ids=[chunk.id for chunk in chunks],
-                                                documents=[chunk.text for chunk in chunks],
-                                                embeddings=embeddings,
-                                                metadatas=[   { "document": chunk.document_name, "page": chunk.page_number, }for chunk in chunks]
-                                    )
+        if len(chunks) != len(embeddings):
+            raise ValueError("Each chunk must have exactly one embedding.")
+
+        for start in range(0, len(chunks), self.BATCH_SIZE):
+            batch_chunks = chunks[start:start + self.BATCH_SIZE]
+            batch_embeddings = embeddings[start:start + self.BATCH_SIZE]
+            self.collection.add(
+                ids=[chunk.id for chunk in batch_chunks],
+                documents=[chunk.text for chunk in batch_chunks],
+                embeddings=batch_embeddings,
+                metadatas=[
+                    {"document": chunk.document_name, "page": chunk.page_number}
+                    for chunk in batch_chunks
+                ],
+            )
 
 
     def search(self, embedding: list[float], top_k: int = 5   ):
