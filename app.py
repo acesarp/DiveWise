@@ -4,11 +4,7 @@ from services.chat_service import ChatService
 from services.knowledge_base_service import KnowledgeBaseService
 
 
-st.set_page_config(
-    page_title="DiveWise AI",
-    page_icon="🌊",
-    layout="wide",
-)
+st.set_page_config(page_title="DiveWise AI", page_icon="🌊", layout="wide")
 
 
 @st.cache_resource
@@ -49,7 +45,6 @@ def render_chat(chat_service: ChatService):
     st.header("💬 Chat")
 
     for message in st.session_state.messages:
-
         with st.chat_message(message.role.value):
             st.markdown(message.content)
 
@@ -74,16 +69,13 @@ def render_chat(chat_service: ChatService):
         st.markdown(question)
 
     with st.chat_message("assistant"):
-
         with st.spinner("Thinking..."):
-
             assistant_message = chat_service.ask(question)
 
         st.markdown(assistant_message.content)
 
         if assistant_message.sources:
             with st.expander("Sources"):
-
                 for source in assistant_message.sources:
                     st.markdown(f"**{source.chunk.document_name}**")
                     st.write(f"Page {source.chunk.page_number}")
@@ -97,17 +89,12 @@ def render_documents( knowledge_base: KnowledgeBaseService):
     st.header("📚 Knowledge Base")
 
     for document in knowledge_base.get_documents():
-
         with st.expander(document.file_name):
-
             col1, col2 = st.columns(2)
-
             with col1:
-
                 st.metric("Pages", document.page_count)
 
             with col2:
-
                 st.metric("Characters", len(document.text))
 
             preview = document.text[:1000]
@@ -122,11 +109,9 @@ def main():
     initialize_session()
 
     with st.spinner( "Loading knowledge base..." ):
-
         knowledge_base, chat_service = (load_services())
 
     st.title("🌊 DiveWise AI")
-
     st.caption("Your AI-powered scuba diving knowledge assistant."    )
 
     render_sidebar(knowledge_base    )
@@ -134,11 +119,9 @@ def main():
     chat_tab, docs_tab = st.tabs(["💬 Chat", "📚 Knowledge Base"]    )
 
     with chat_tab:
-
         render_chat(chat_service)
 
     with docs_tab:
-
         render_documents(knowledge_base)
 
 

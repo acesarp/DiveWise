@@ -26,13 +26,6 @@ class ChatService:
         search_results = self.retrieval_service.retrieve(question)
 
         # Generate response
-        answer = self.openai_service.generate(
-            question=question,
-            search_results=search_results
-        )
+        answer = self.openai_service.generate(question=question,search_results=search_results)
 
-        return ChatMessage(
-            role=MessageRole.ASSISTANT,
-            content=answer,
-            sources=search_results
-        )
+        return ChatMessage(         role=MessageRole.ASSISTANT,            content=answer,            sources=search_results        )

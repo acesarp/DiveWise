@@ -4,11 +4,10 @@ from openai import OpenAI
 class OpenAIService:
 
     def __init__(self):
-
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")        )
 
-    def generate(self,        question: str,        search_results: list,    ) -> str:
 
+    def generate(self,        question: str,        search_results: list,    ) -> str:
         context = "\n\n".join(result.chunk.text  for result in search_results        )
 
         prompt = f"""
@@ -24,6 +23,5 @@ Context:
 Question:
 {question}
 """
-
         response = self.client.responses.create(model="gpt-5", input=prompt,)
         return response.output_text

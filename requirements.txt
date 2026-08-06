@@ -56,4 +56,4 @@ watchdog==6.0.0
 websockets==16.1
 chromadb
 pypdf
-cryptography
+cryptography>=3.1
