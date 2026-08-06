@@ -12,12 +12,11 @@ class VectorStore:
 
 
     def add_chunks(self, chunks: list[Chunk], embeddings: list[list[float]]    ) -> None:
-        self.collection.add(
-            ids=[chunk.id for chunk in chunks],
-            documents=[chunk.text for chunk in chunks],
-            embeddings=embeddings,
-            metadatas=[   { "document": chunk.document_name, "page": chunk.page_number, }for chunk in chunks]
-            )
+        self.collection.add(ids=[chunk.id for chunk in chunks],
+                                                documents=[chunk.text for chunk in chunks],
+                                                embeddings=embeddings,
+                                                metadatas=[   { "document": chunk.document_name, "page": chunk.page_number, }for chunk in chunks]
+                                     )
 
 
     def search(self, embedding: list[float], top_k: int = 5   ):

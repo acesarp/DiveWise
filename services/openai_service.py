@@ -4,11 +4,13 @@ from openai import OpenAI
 class OpenAIService:
 
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")        )
+        api_key=os.getenv("OPENAI_API_KEY")
+        print(api_key)
+        self.client = OpenAI(api_key=api_key)
 
 
-    def generate(self,        question: str,        search_results: list,    ) -> str:
-        context = "\n\n".join(result.chunk.text  for result in search_results        )
+    def generate(self, question: str, search_results: list) -> str:
+        context = "\n\n".join(result.chunk.text  for result in search_results)
 
         prompt = f"""
 You are an expert scuba diving assistant.

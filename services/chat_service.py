@@ -7,7 +7,6 @@ from services.openai_service import OpenAIService
 class ChatService:
 
     def __init__(self):
-
         self.retrieval_service = RetrievalService()
         self.openai_service = OpenAIService()
 
@@ -28,4 +27,4 @@ class ChatService:
         # Generate response
         answer = self.openai_service.generate(question=question,search_results=search_results)
 
-        return ChatMessage(         role=MessageRole.ASSISTANT,            content=answer,            sources=search_results        )
+        return ChatMessage(role=MessageRole.ASSISTANT, content=answer, sources=search_results)

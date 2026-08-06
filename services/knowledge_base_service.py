@@ -12,7 +12,6 @@ class KnowledgeBaseService:
         self.chunker = Chunker()
         self.embedding_service = EmbeddingService()
         self.vector_store = VectorStore()
-
         self.documents = []
         self.chunks = []
 
