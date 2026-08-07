@@ -1,14 +1,17 @@
 import streamlit as st
-
+from pathlib import Path
 from services.chat_service import ChatService
 from services.knowledge_base_service import KnowledgeBaseService
 
-
 st.set_page_config(page_title="DiveWise AI", page_icon="🌊", layout="wide")
 
-
 @st.cache_resource
-def load_services() -> tuple[KnowledgeBaseService, ChatService]:
+def load_services(
+    document_names: tuple[str, ...],
+) -> tuple[KnowledgeBaseService, ChatService]:
+    # document_names is the cache key: adding a PDF creates a new service
+    # resource and runs the incremental indexer.
+    del document_names
     knowledge_base = KnowledgeBaseService()
     knowledge_base.initialize()
 
@@ -106,15 +109,27 @@ def render_documents( knowledge_base: KnowledgeBaseService):
 def main():
     initialize_session()
 
+    st.title("🌊 DiveWise AI")
+    st.caption("Your AI-powered scuba diving knowledge assistant.")
+
+    progress_bar = st.progress(0, text="Checking the knowledge base...")
+    loading_status = st.status("Checking loaded documents...", expanded=True)
+
     try:
-        with st.spinner("Loading knowledge base..."):
-            knowledge_base, chat_service = load_services()
+        document_names = tuple(sorted(path.name for path in Path("data/documents").glob("*.pdf")))
+        progress_bar.progress(30, text="Loading services...")
+        loading_status.update(label="Loading and indexing documents...", state="running", expanded=True)
+        knowledge_base, chat_service = load_services(document_names)
+        progress_bar.progress(100, text="Finalizing...")
     except RuntimeError as error:
+        progress_bar.empty()
+        loading_status.update(label="Knowledge base could not be loaded", state="error", expanded=True)
         st.error(str(error))
         st.stop()
-
-    st.title("🌊 DiveWise AI")
-    st.caption("Your AI-powered scuba diving knowledge assistant."    )
+    progress_bar.empty()
+    for document in knowledge_base.get_documents():
+        loading_status.write(f"✅ Loaded: {document.file_name}")
+    loading_status.update(label="Knowledge base ready", state="complete", expanded=True)
 
     render_sidebar(knowledge_base    )
 
