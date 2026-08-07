@@ -5,4 +5,4 @@ kind: Kustomization
 resources:
     - ../../base
 patches:
-    - path: ai-photo-studio-service.yaml
+    - path: divewise-ai-service.yaml

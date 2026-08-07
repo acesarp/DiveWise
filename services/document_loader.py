@@ -3,7 +3,7 @@ from collections.abc import Callable
 
 from pypdf import PdfReader
 
-from models.document import Document
+from models import Document
 from services.text_cleaner import TextCleaner
 
 

@@ -1,19 +1,19 @@
 # check if there is at least one published port
 
-#! ai-photo-studio-service.yaml
+#! divewise-ai-service.yaml
 # Generated code, do not edit
 apiVersion: v1
 kind: Service
 metadata:
-    name: ai-photo-studio-published
+    name: divewise-ai-published
     namespace: finalproject
     labels:
         com.docker.compose.project: finalproject
-        com.docker.compose.service: ai-photo-studio
+        com.docker.compose.service: divewise-ai
 spec:
     selector:
         com.docker.compose.project: finalproject
-        com.docker.compose.service: ai-photo-studio
+        com.docker.compose.service: divewise-ai
     ports:
         - name: ai-photo-s-8502
           port: 8502

@@ -1,11 +1,11 @@
 # check if there is at least one published port
 
-#! ai-photo-studio-service.yaml
+#! divewise-ai-service.yaml
 # Generated code, do not edit
 apiVersion: v1
 kind: Service
 metadata:
-    name: ai-photo-studio-published
+    name: divewise-ai-published
     namespace: finalproject
 spec:
     type: LoadBalancer

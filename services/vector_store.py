@@ -1,8 +1,7 @@
+import numpy as np
 from chromadb import PersistentClient
 from chromadb.api.models.Collection import Collection
-from models.chunk import Chunk
-from models.document import Document
-from models.search_result import SearchResult
+from models import Chunk, Document, SearchResult
 
 class VectorStore:
     COLLECTION_NAME = "divewise"
@@ -23,7 +22,7 @@ class VectorStore:
             self.collection.add(
                 ids=[chunk.id for chunk in batch_chunks],
                 documents=[chunk.text for chunk in batch_chunks],
-                embeddings=batch_embeddings,
+                embeddings=np.array(batch_embeddings),
                 metadatas=[
                     {"document": chunk.document_name, "page": chunk.page_number}
                     for chunk in batch_chunks
@@ -37,19 +36,14 @@ class VectorStore:
                                                         include=["documents", "metadatas", "distances"],
                                                     )
         
-        ids = result.get("ids", [[]])[0]
-        documents = result.get("documents", [[]])[0]
-        metadatas = result.get("metadatas", [[]])[0]
-        distances = result.get("distances", [[]])[0]
+        ids = (result.get("ids") or [[]])[0]
+        documents = (result.get("documents") or [[]])[0]
+        metadatas = (result.get("metadatas") or [[]])[0]
+        distances = (result.get("distances") or [[]])[0]
 
         return [
             SearchResult(
-                chunk=Chunk(
-                    id=chunk_id,
-                    document_name=metadata["document"],
-                    page_number=int(metadata["page"]),
-                    text=text,
-                ),
+                chunk=Chunk(chunk_id, str(metadata["document"]), int(metadata["page"]), text),
                 # Chroma distances are lower-is-better; expose a bounded score to the UI.
                 similarity=1 / (1 + distance),
             )

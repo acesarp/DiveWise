@@ -1,5 +1,4 @@
-from models.chat_message import ChatMessage
-from models.message_role import MessageRole
+from models import ChatMessage, MessageRole
 from services.retrieval_service import RetrievalService
 from services.openai_service import OpenAIService
 

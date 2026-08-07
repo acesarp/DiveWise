@@ -1,5 +1,4 @@
-from models.chunk import Chunk
-from models.document import Document
+from models import Chunk, Document
 import uuid
 
 class Chunker:

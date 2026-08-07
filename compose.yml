@@ -1,8 +1,8 @@
 services:
-  ai-photo-studio:
+  divewise-ai:
     build: .
-    image: ai-photo-studio
-    container_name: ai-photo-studio
+    image: divewise-ai
+    container_name: divewise-ai
     restart: unless-stopped
     ports:
       - "8502:8502"
