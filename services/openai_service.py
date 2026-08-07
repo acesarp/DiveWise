@@ -4,12 +4,14 @@ from dotenv import load_dotenv
 
 class OpenAIService:
 
-    def __init__(self):
+    def __init__(self, model: str = "gpt-5-mini"):
         load_dotenv()
         api_key = os.getenv("OPENAI_API_KEY")
+        print(f"OPENAI_API_KEY: {api_key}")
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY is not configured. Add it to .env or the environment.")
         self.client = OpenAI(api_key=api_key)
+        self.model = model
 
 
     def generate(self, question: str, search_results: list) -> str:
@@ -28,5 +30,5 @@ Context:
 Question:
 {question}
 """
-        response = self.client.responses.create(model="gpt-5", input=prompt,)
+        response = self.client.responses.create(model=self.model, input=prompt)
         return response.output_text

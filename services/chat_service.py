@@ -5,12 +5,12 @@ from services.openai_service import OpenAIService
 
 class ChatService:
 
-    def __init__(self, knowledge_base):
+    def __init__(self, knowledge_base, generation_model: str = "gpt-5-mini"):
         self.retrieval_service = RetrievalService(
             embedding_service=knowledge_base.embedding_service,
             vector_store=knowledge_base.vector_store,
         )
-        self.openai_service = OpenAIService()
+        self.openai_service = OpenAIService(model=generation_model)
 
     @staticmethod
     def create_user_message(question: str) -> ChatMessage:

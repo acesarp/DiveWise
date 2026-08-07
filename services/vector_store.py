@@ -6,10 +6,12 @@ from models import Chunk, Document, SearchResult
 class VectorStore:
     COLLECTION_NAME = "divewise"
     BATCH_SIZE = 1_000
-
-    def __init__(self, db_path: str = "data/chroma_db"):
+    DB_NAME = "data/chroma_db"
+    
+    def __init__(self, db_path: str = DB_NAME, collection_name: str = COLLECTION_NAME):
         self.client = PersistentClient(path=db_path)
-        self.collection: Collection = self.client.get_or_create_collection(name=self.COLLECTION_NAME )
+        self.collection_name = collection_name
+        self.collection: Collection = self.client.get_or_create_collection(name=self.collection_name)
 
 
     def add_chunks(self, chunks: list[Chunk], embeddings: list[list[float]]    ) -> None:
@@ -82,5 +84,5 @@ class VectorStore:
 
 
     def clear(self):
-        self.client.delete_collection(self.COLLECTION_NAME)
-        self.collection = self.client.get_or_create_collection(self.COLLECTION_NAME)
+        self.client.delete_collection(self.collection_name)
+        self.collection = self.client.get_or_create_collection(self.collection_name)

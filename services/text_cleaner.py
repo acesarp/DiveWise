@@ -8,10 +8,8 @@ class TextCleaner:
     def clean(text: str) -> str:
         """
         Cleans extracted PDF text while preserving its meaning.
-
         Args:
             text: Raw text extracted from a PDF.
-
         Returns:
             Cleaned text.
         """

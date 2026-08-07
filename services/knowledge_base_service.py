@@ -14,12 +14,12 @@ class KnowledgeBaseStatistics:
 
 class KnowledgeBaseService:
 
-    def __init__(self):
+    def __init__(self, embedding_model: str = "text-embedding-3-small"):
 
         self.loader = DocumentLoader()
         self.chunker = Chunker()
-        self.embedding_service = EmbeddingService()
-        self.vector_store = VectorStore()
+        self.embedding_service = EmbeddingService(model=embedding_model)
+        self.vector_store = VectorStore(collection_name=f"divewise-{embedding_model}")
         self.documents = []
         self.chunks = []
 
@@ -28,18 +28,11 @@ class KnowledgeBaseService:
         indexed_document_names = self.vector_store.get_document_names()
         new_document_names = available_document_names - indexed_document_names
 
-        # Add only newly discovered PDFs. Existing documents are neither cleared
-        # nor re-embedded; PDFs in this project are treated as immutable.
+        # Add only newly discovered PDFs. Existing documents are neither cleared or re-embedded
         if new_document_names:
-            documents_to_index = self.loader.load_documents(
-                new_document_names,
-                progress_callback=progress_callback,
-            )
+            documents_to_index = self.loader.load_documents(new_document_names, progress_callback=progress_callback)
             self.chunks = self.chunker.create_chunks(documents_to_index)
-            embeddings = self.embedding_service.create_embeddings(
-                self.chunks,
-                progress_callback=progress_callback,
-            )
+            embeddings = self.embedding_service.create_embeddings(self.chunks, progress_callback=progress_callback)
             self.vector_store.add_chunks(self.chunks, embeddings)
 
         self.documents = self.vector_store.get_documents()
@@ -56,8 +49,4 @@ class KnowledgeBaseService:
         return len(self.documents)
 
     def get_statistics(self) -> KnowledgeBaseStatistics:
-        return KnowledgeBaseStatistics(
-            documents=self.get_document_count(),
-            pages=sum(document.page_count for document in self.documents),
-            chunks=self.get_chunk_count(),
-        )
+        return KnowledgeBaseStatistics(self.get_document_count(), sum(document.page_count for document in self.documents), self.get_chunk_count())

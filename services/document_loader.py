@@ -1,8 +1,6 @@
 from pathlib import Path
 from collections.abc import Callable
-
 from pypdf import PdfReader
-
 from models import Document
 from services.text_cleaner import TextCleaner
 
@@ -42,7 +40,7 @@ class DocumentLoader:
 
             clean_text = "\n\n".join(page_text for page_text in page_texts if page_text)
 
-            document = Document(file_name=pdf_file.name, file_path=str(pdf_file), page_count=len(reader.pages), text=clean_text, page_texts=page_texts)
+            document = Document(pdf_file.name, str(pdf_file), len(reader.pages), clean_text, page_texts)
             documents.append(document)
             if progress_callback:
                 progress_callback(index, total_files, f"Read {pdf_file.name}")

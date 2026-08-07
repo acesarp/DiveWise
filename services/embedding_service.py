@@ -1,19 +1,18 @@
 import os
 from collections.abc import Callable
-
 from openai import OpenAI
 from dotenv import load_dotenv
 
 
 class EmbeddingService:
 
-    def __init__(self):
+    def __init__(self, model: str = "text-embedding-3-small"):
         load_dotenv()
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY is not configured. Add it to .env or the environment.")
         self.client = OpenAI(api_key=api_key)
-        self.model = "text-embedding-3-small"
+        self.model = model
 
 
     def create_embedding(self, text: str) -> list[float]:
