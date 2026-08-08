@@ -7,29 +7,28 @@
 	"launch": {
 		"version": "0.2.0",
 		"configurations": [
-
 			{
-				"name": "✅ Python Debugger: Python File",
+				"name": "🐍 Python: Streamlit (app.py)",
 				"type": "debugpy",
 				"request": "launch",
-				"program": "${file}"
-			},
-					{
-						"name": "Python: Streamlit",
-						"type": "debugpy",
-						"request": "launch",
-						"module": "streamlit",
-						"args": [
-							"run",
-							"${file}",
-							"--server.port",
-							"8085",
-							"--logger.level=debug",
-							"--server.address",
-							"127.0.0.1"
-						],
-						"jinja": true
-					}
+				"module": "streamlit",
+				"cwd": "${workspaceFolder}",
+				"console": "integratedTerminal",
+				"args": [
+					"run",
+					"app.py",
+					"--server.port",
+					"8084",
+					"--logger.level=debug",
+					"--server.address",
+					"127.0.0.1"
+				],
+				"env": {
+					"PYTHONUNBUFFERED": "1"
+				},
+				"justMyCode": true,
+				"jinja": true
+			}
 		]
 	}
 }

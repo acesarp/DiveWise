@@ -1,6 +1,5 @@
 import streamlit as st
 from pathlib import Path
-from collections.abc import Callable
 from services.chat_service import ChatService
 from services.knowledge_base_service import KnowledgeBaseService
 from models import MessageRole
@@ -42,10 +41,6 @@ def initialize_session():
 def render_html_fragment(file_name: str) -> None:
     fragment = Path("ui") / file_name
     st.markdown(fragment.read_text(encoding="utf-8"), unsafe_allow_html=True)
-
-
-def apply_theme() -> None:
-    render_html_fragment("styles.html")
 
 
 def get_token_totals() -> tuple[int, int, int]:
@@ -254,7 +249,7 @@ def render_overview_cards(knowledge_base: KnowledgeBaseService) -> None:
     prompt_total, completion_total, total_tokens = get_token_totals()
 
     st.markdown("<div class='stats-shell'>", unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4 = st.columns(4, border=True)
     col1.metric("Documents", stats.documents)
     col2.metric("Pages", stats.pages)
     col3.metric("Chunks", stats.chunks)
@@ -285,16 +280,18 @@ def calculate_loading_percent(current: int, total: int, message: str) -> int:
 
 def main():
     initialize_session()
-    apply_theme()
+    handle_document_upload()
 
+    embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric, top_k = render_model_settings()
     render_hero()
 
-    handle_document_upload()
-    embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric, top_k = render_model_settings()
+    progress_placeholder = st.empty()
+    percentage_placeholder = st.empty()
+    status_placeholder = st.empty()
 
-    progress_bar = st.progress(0, text="Checking the knowledge base...")
-    percentage_text = st.empty()
-    loading_status = st.status("Checking loaded documents...", expanded=True)
+    progress_bar = progress_placeholder.progress(0, text="Checking the knowledge base...")
+    percentage_text = percentage_placeholder.empty()
+    loading_status = status_placeholder.status("Checking loaded documents...", expanded=True)
 
     try:
         document_names = tuple(sorted(path.name for path in Path("data/documents").glob("*.pdf")))
@@ -304,9 +301,10 @@ def main():
 
         def update_loading_progress(current: int, total: int, message: str) -> None:
             percent = calculate_loading_percent(current, total, message)
-            progress_bar.progress(percent, text=message)
+            display_message = "Finalizing indexed content..." if message == "Knowledge base ready" else message
+            progress_bar.progress(percent, text=display_message)
             percentage_text.caption(f"{percent}% complete")
-            loading_status.update(label=message, state="running", expanded=True)
+            loading_status.update(label=display_message, state="running", expanded=True)
 
         del document_names
         knowledge_base = get_knowledge_base(
@@ -326,19 +324,16 @@ def main():
         progress_bar.progress(100, text="Finalizing...")
         percentage_text.caption("100% complete")
     except RuntimeError as error:
-        progress_bar.empty()
-        percentage_text.empty()
+        progress_placeholder.empty()
+        percentage_placeholder.empty()
         loading_status.update(label="Knowledge base could not be loaded", state="error", expanded=True)
         st.error(str(error))
         st.stop()
-    progress_bar.empty()
-    percentage_text.empty()
-    for document in knowledge_base.get_documents():
-        loading_status.write(f"✅ Loaded: {document.file_name}")
-    loading_status.update(label="Knowledge base ready", state="complete", expanded=True)
 
-    #render_sidebar(knowledge_base)
-    render_overview_cards(knowledge_base)
+    # Remove transient loading elements before rendering the main page content.
+    progress_placeholder.empty()
+    percentage_placeholder.empty()
+    status_placeholder.empty()
 
     chat_tab, docs_tab = st.tabs(["💬 Chat", "📚 Knowledge Base"])
 
@@ -347,6 +342,13 @@ def main():
 
     with docs_tab:
         render_documents(knowledge_base)
+
+    #render_sidebar(knowledge_base)
+    render_overview_cards(knowledge_base)
+
+    kb_ready_status = st.status("Knowledge base ready", state="complete", expanded=True)
+    for document in knowledge_base.get_documents():
+        kb_ready_status.write(f"✅ Loaded: {document.file_name}")
 
 
 if __name__ == "__main__":

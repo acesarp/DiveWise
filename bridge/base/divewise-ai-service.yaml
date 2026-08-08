@@ -15,7 +15,7 @@ spec:
         com.docker.compose.project: finalproject
         com.docker.compose.service: divewise-ai
     ports:
-        - name: ai-photo-s-8502
+        - name: divewise-ai-s-8502
           port: 8502
           protocol: TCP
-          targetPort: ai-photo-s-8502
+          targetPort: divewise-ai-s-8502
