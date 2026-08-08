@@ -8,21 +8,14 @@ from models import MessageRole
 st.set_page_config(page_title="DiveWise AI", page_icon="🌊", layout="wide")
 
 @st.cache_resource
-def load_services(
-    document_names: tuple[str, ...],
-    embedding_model: str,
-    generation_model: str,
-    _progress_callback: Callable[[int, int, str], None] | None = None,
-) -> tuple[KnowledgeBaseService, ChatService]:
-    # document_names and selected models are part of the cache key so changing
-    # documents or model settings creates a fresh service resource.
-    del document_names
-    knowledge_base = KnowledgeBaseService(embedding_model=embedding_model)
-    knowledge_base.initialize(progress_callback=_progress_callback)
+def get_knowledge_base(embedding_model: str) -> KnowledgeBaseService:
+    return KnowledgeBaseService(embedding_model=embedding_model)
 
-    chat_service = ChatService(knowledge_base=knowledge_base, generation_model=generation_model)
 
-    return knowledge_base, chat_service
+@st.cache_resource
+def get_chat_service(embedding_model: str, generation_model: str) -> ChatService:
+    knowledge_base = get_knowledge_base(embedding_model)
+    return ChatService(knowledge_base=knowledge_base, generation_model=generation_model)
 
 
 def initialize_session():
@@ -197,6 +190,22 @@ def render_overview_cards(knowledge_base: KnowledgeBaseService) -> None:
         c2.metric("Completion tokens", completion_total)
 
 
+def calculate_loading_percent(current: int, total: int, message: str) -> int:
+    safe_total = max(total, 1)
+    ratio = current / safe_total
+
+    if message.startswith("Reading") or message.startswith("Read"):
+        return min(20 + int(ratio * 35), 55)
+
+    if message == "Creating embeddings":
+        return min(55 + int(ratio * 40), 95)
+
+    if message == "Knowledge base ready":
+        return 100
+
+    return min(20 + int(ratio * 70), 95)
+
+
 def main():
     initialize_session()
     apply_theme()
@@ -206,32 +215,35 @@ def main():
     embedding_model, generation_model = render_model_settings()
 
     progress_bar = st.progress(0, text="Checking the knowledge base...")
+    percentage_text = st.empty()
     loading_status = st.status("Checking loaded documents...", expanded=True)
 
     try:
         document_names = tuple(sorted(path.name for path in Path("data/documents").glob("*.pdf")))
         progress_bar.progress(20, text="Loading services...")
+        percentage_text.caption("20% complete")
         loading_status.update(label="Loading and indexing documents...", state="running", expanded=True)
 
         def update_loading_progress(current: int, total: int, message: str) -> None:
-            safe_total = max(total, 1)
-            percent = 20 + int((current / safe_total) * 70)
-            progress_bar.progress(min(percent, 95), text=message)
+            percent = calculate_loading_percent(current, total, message)
+            progress_bar.progress(percent, text=message)
+            percentage_text.caption(f"{percent}% complete")
             loading_status.update(label=message, state="running", expanded=True)
 
-        knowledge_base, chat_service = load_services(
-            document_names,
-            embedding_model,
-            generation_model,
-            _progress_callback=update_loading_progress,
-        )
+        del document_names
+        knowledge_base = get_knowledge_base(embedding_model)
+        knowledge_base.initialize(progress_callback=update_loading_progress)
+        chat_service = get_chat_service(embedding_model, generation_model)
         progress_bar.progress(100, text="Finalizing...")
+        percentage_text.caption("100% complete")
     except RuntimeError as error:
         progress_bar.empty()
+        percentage_text.empty()
         loading_status.update(label="Knowledge base could not be loaded", state="error", expanded=True)
         st.error(str(error))
         st.stop()
     progress_bar.empty()
+    percentage_text.empty()
     for document in knowledge_base.get_documents():
         loading_status.write(f"✅ Loaded: {document.file_name}")
     loading_status.update(label="Knowledge base ready", state="complete", expanded=True)
