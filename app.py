@@ -92,7 +92,7 @@ def handle_document_upload() -> None:
     st.sidebar.divider()
 
 
-def render_model_settings() -> tuple[str, str, int, int, str]:
+def render_model_settings() -> tuple[str, str, int, int, str, int]:
     st.sidebar.header("⚙️ Controls")
     st.sidebar.caption("Tune model choices for retrieval and response quality.")
     embedding_model = st.sidebar.selectbox(
@@ -126,8 +126,16 @@ def render_model_settings() -> tuple[str, str, int, int, str]:
         index=0,
         help="Controls how vector similarity is calculated during retrieval.",
     )
+    top_k = st.sidebar.slider(
+        "Top-K retrieval",
+        min_value=1,
+        max_value=12,
+        value=5,
+        step=1,
+        help="Controls how many chunks are retrieved to ground each answer.",
+    )
     st.sidebar.divider()
-    return embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric
+    return embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric, top_k
 
 #--------------------------------
 #SIDE BAR RENDERING
@@ -154,7 +162,7 @@ def render_sidebar(knowledge_base: KnowledgeBaseService):
         st.sidebar.markdown(f"• {document.file_name}")
 
 
-def render_chat(chat_service: ChatService):
+def render_chat(chat_service: ChatService, top_k: int):
     st.subheader("Ask a diving question")
     st.caption("Responses are grounded in your indexed documents.")
 
@@ -191,7 +199,7 @@ def render_chat(chat_service: ChatService):
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            assistant_message = chat_service.ask(question)
+            assistant_message = chat_service.ask(question, top_k=top_k)
 
         st.markdown(assistant_message.content)
 
@@ -282,7 +290,7 @@ def main():
     render_hero()
 
     handle_document_upload()
-    embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric = render_model_settings()
+    embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric, top_k = render_model_settings()
 
     progress_bar = st.progress(0, text="Checking the knowledge base...")
     percentage_text = st.empty()
@@ -335,7 +343,7 @@ def main():
     chat_tab, docs_tab = st.tabs(["💬 Chat", "📚 Knowledge Base"])
 
     with chat_tab:
-        render_chat(chat_service)
+        render_chat(chat_service, top_k=top_k)
 
     with docs_tab:
         render_documents(knowledge_base)

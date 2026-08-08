@@ -16,7 +16,7 @@ class ChatService:
     def create_user_message(question: str) -> ChatMessage:
         return ChatMessage(role=MessageRole.USER, content=question)
 
-    def ask(self, question: str) -> ChatMessage:
+    def ask(self, question: str, top_k: int = 5) -> ChatMessage:
         """
         Answers a user's question using the RAG pipeline.
 
@@ -28,7 +28,7 @@ class ChatService:
         """
 
         # Retrieve relevant chunks
-        search_results = self.retrieval_service.retrieve(question)
+        search_results = self.retrieval_service.retrieve(question, top_k=top_k)
 
         # Generate response
         answer, token_usage = self.openai_service.generate(question=question, search_results=search_results)
