@@ -20,12 +20,23 @@ class SearchResult:
     similarity: float
 
 
+@dataclass(frozen=True)
+class TokenUsage:
+    prompt_tokens: int
+    completion_tokens: int
+
+    @property
+    def total_tokens(self) -> int:
+        return self.prompt_tokens + self.completion_tokens
+
+
 @dataclass
 class ChatMessage:
     role: MessageRole
     content: str
     timestamp: datetime = field(default_factory=datetime.now)
     sources: list[SearchResult] = field(default_factory=list)
+    token_usage: TokenUsage | None = None
 
 
 @dataclass

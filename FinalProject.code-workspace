@@ -3,5 +3,33 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+
+			{
+				"name": "✅ Python Debugger: Python File",
+				"type": "debugpy",
+				"request": "launch",
+				"program": "${file}"
+			},
+					{
+						"name": "Python: Streamlit",
+						"type": "debugpy",
+						"request": "launch",
+						"module": "streamlit",
+						"args": [
+							"run",
+							"${file}",
+							"--server.port",
+							"8085",
+							"--logger.level=debug",
+							"--server.address",
+							"127.0.0.1"
+						],
+						"jinja": true
+					}
+		]
+	}
 }
