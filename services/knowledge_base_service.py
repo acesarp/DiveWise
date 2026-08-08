@@ -14,12 +14,21 @@ class KnowledgeBaseStatistics:
 
 class KnowledgeBaseService:
 
-    def __init__(self, embedding_model: str = "text-embedding-3-small"):
+    def __init__(
+        self,
+        embedding_model: str = "text-embedding-3-small",
+        chunk_size: int = 800,
+        chunk_overlap: int = 150,
+        similarity_metric: str = "cosine",
+    ):
 
         self.loader = DocumentLoader()
-        self.chunker = Chunker()
+        self.chunker = Chunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         self.embedding_service = EmbeddingService(model=embedding_model)
-        self.vector_store = VectorStore(collection_name=f"divewise-{embedding_model}")
+        self.vector_store = VectorStore(
+            collection_name=f"divewise-{embedding_model}-{chunk_size}-{chunk_overlap}-{similarity_metric}",
+            similarity_metric=similarity_metric,
+        )
         self.documents = []
         self.chunks = []
 

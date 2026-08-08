@@ -8,10 +8,25 @@ class VectorStore:
     BATCH_SIZE = 1_000
     DB_NAME = "data/chroma_db"
     
-    def __init__(self, db_path: str = DB_NAME, collection_name: str = COLLECTION_NAME):
+    def __init__(
+        self,
+        db_path: str = DB_NAME,
+        collection_name: str = COLLECTION_NAME,
+        similarity_metric: str = "cosine",
+    ):
         self.client = PersistentClient(path=db_path)
         self.collection_name = collection_name
-        self.collection: Collection = self.client.get_or_create_collection(name=self.collection_name)
+        self.similarity_metric = similarity_metric
+        self.collection: Collection = self.client.get_or_create_collection(
+            name=self.collection_name,
+            metadata={"hnsw:space": self.similarity_metric},
+        )
+
+    def _distance_to_similarity(self, distance: float) -> float:
+        if self.similarity_metric == "cosine":
+            return max(0.0, min(1.0, 1 - distance))
+
+        return 1 / (1 + distance)
 
 
     def add_chunks(self, chunks: list[Chunk], embeddings: list[list[float]]    ) -> None:
@@ -47,7 +62,7 @@ class VectorStore:
             SearchResult(
                 chunk=Chunk(chunk_id, str(metadata["document"]), int(metadata["page"]), text),
                 # Chroma distances are lower-is-better; expose a bounded score to the UI.
-                similarity=1 / (1 + distance),
+                similarity=self._distance_to_similarity(distance),
             )
             for chunk_id, text, metadata, distance in zip(ids, documents, metadatas, distances)
         ]

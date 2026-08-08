@@ -8,13 +8,29 @@ from models import MessageRole
 st.set_page_config(page_title="DiveWise AI", page_icon="🌊", layout="wide")
 
 @st.cache_resource
-def get_knowledge_base(embedding_model: str) -> KnowledgeBaseService:
-    return KnowledgeBaseService(embedding_model=embedding_model)
+def get_knowledge_base(
+    embedding_model: str,
+    chunk_size: int,
+    chunk_overlap: int,
+    similarity_metric: str,
+) -> KnowledgeBaseService:
+    return KnowledgeBaseService(
+        embedding_model=embedding_model,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        similarity_metric=similarity_metric,
+    )
 
 
 @st.cache_resource
-def get_chat_service(embedding_model: str, generation_model: str) -> ChatService:
-    knowledge_base = get_knowledge_base(embedding_model)
+def get_chat_service(
+    embedding_model: str,
+    generation_model: str,
+    chunk_size: int,
+    chunk_overlap: int,
+    similarity_metric: str,
+) -> ChatService:
+    knowledge_base = get_knowledge_base(embedding_model, chunk_size, chunk_overlap, similarity_metric)
     return ChatService(knowledge_base=knowledge_base, generation_model=generation_model)
 
 
@@ -43,8 +59,41 @@ def get_token_totals() -> tuple[int, int, int]:
     return prompt_total, completion_total, prompt_total + completion_total
 
 
-def render_model_settings() -> tuple[str, str]:
-    st.sidebar.markdown("⚙️ Controls")
+def handle_document_upload() -> None:
+    documents_dir = Path("data/documents")
+    documents_dir.mkdir(parents=True, exist_ok=True)
+
+    st.sidebar.subheader("Upload YOUR PDF")
+    uploaded_file = st.sidebar.file_uploader(
+        "Add a PDF to the knowledge base",
+        type=["pdf"],
+        key="sidebar_pdf_upload",
+    )
+
+    if uploaded_file is None:
+        st.sidebar.caption("Upload a PDF and it will be indexed for chat answers.")
+        st.sidebar.divider()
+        return
+
+    file_name = Path(uploaded_file.name).name
+    destination = documents_dir / file_name
+
+    if destination.exists():
+        st.sidebar.warning("A PDF with this name already exists. Rename the file to upload it.")
+        st.sidebar.divider()
+        return
+
+    if st.sidebar.button("Save PDF", key="save_uploaded_pdf", width="stretch"):
+        destination.write_bytes(uploaded_file.getbuffer())
+        st.sidebar.success(f"Saved {file_name}. Rebuilding knowledge base...")
+        st.rerun()
+
+    st.sidebar.caption(f"Ready to save: {file_name}")
+    st.sidebar.divider()
+
+
+def render_model_settings() -> tuple[str, str, int, int, str]:
+    st.sidebar.header("⚙️ Controls")
     st.sidebar.caption("Tune model choices for retrieval and response quality.")
     embedding_model = st.sidebar.selectbox(
         "Embedding model",
@@ -55,18 +104,38 @@ def render_model_settings() -> tuple[str, str]:
         ["gpt-5-mini", "gpt-4", "gpt-4-32k"],
         index=0,
     )
+    chunk_size = st.sidebar.slider(
+        "Chunk size",
+        min_value=300,
+        max_value=1600,
+        value=800,
+        step=50,
+        help="Controls how much text goes into each chunk before indexing.",
+    )
+    chunk_overlap = st.sidebar.slider(
+        "Chunk overlap",
+        min_value=0,
+        max_value=chunk_size - 50,
+        value=min(150, chunk_size - 50),
+        step=25,
+        help="Controls how much text adjacent chunks share.",
+    )
+    similarity_metric = st.sidebar.selectbox(
+        "Similarity metric",
+        ["cosine", "l2", "ip"],
+        index=0,
+        help="Controls how vector similarity is calculated during retrieval.",
+    )
     st.sidebar.divider()
-    return embedding_model, generation_model
+    return embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric
 
-
+#--------------------------------
+#SIDE BAR RENDERING
 def render_sidebar(knowledge_base: KnowledgeBaseService):
+    """Render the sidebar with knowledge base statistics and token usage."""
     stats = knowledge_base.get_statistics()
     prompt_total, completion_total, total_tokens = get_token_totals()
 
-    st.sidebar.title("🌊 DiveWise AI")
-
-    st.sidebar.markdown("Precision scuba guidance with retrieval-augmented generation.")
-    st.sidebar.divider()
     st.sidebar.subheader("Knowledge Base")
     st.sidebar.metric("Documents", stats.documents)
     st.sidebar.metric("Pages", stats.pages)
@@ -212,7 +281,8 @@ def main():
 
     render_hero()
 
-    embedding_model, generation_model = render_model_settings()
+    handle_document_upload()
+    embedding_model, generation_model, chunk_size, chunk_overlap, similarity_metric = render_model_settings()
 
     progress_bar = st.progress(0, text="Checking the knowledge base...")
     percentage_text = st.empty()
@@ -231,9 +301,20 @@ def main():
             loading_status.update(label=message, state="running", expanded=True)
 
         del document_names
-        knowledge_base = get_knowledge_base(embedding_model)
+        knowledge_base = get_knowledge_base(
+            embedding_model,
+            chunk_size,
+            chunk_overlap,
+            similarity_metric,
+        )
         knowledge_base.initialize(progress_callback=update_loading_progress)
-        chat_service = get_chat_service(embedding_model, generation_model)
+        chat_service = get_chat_service(
+            embedding_model,
+            generation_model,
+            chunk_size,
+            chunk_overlap,
+            similarity_metric,
+        )
         progress_bar.progress(100, text="Finalizing...")
         percentage_text.caption("100% complete")
     except RuntimeError as error:
@@ -248,7 +329,7 @@ def main():
         loading_status.write(f"✅ Loaded: {document.file_name}")
     loading_status.update(label="Knowledge base ready", state="complete", expanded=True)
 
-    render_sidebar(knowledge_base)
+    #render_sidebar(knowledge_base)
     render_overview_cards(knowledge_base)
 
     chat_tab, docs_tab = st.tabs(["💬 Chat", "📚 Knowledge Base"])
