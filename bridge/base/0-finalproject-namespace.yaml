@@ -1,8 +1,0 @@
-#! 0-finalproject-namespace.yaml
-# Generated code, do not edit
-apiVersion: v1
-kind: Namespace
-metadata:
-    name: finalproject
-    labels:
-        com.docker.compose.project: finalproject

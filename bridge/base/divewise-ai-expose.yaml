@@ -4,13 +4,13 @@ apiVersion: v1
 kind: Service
 metadata:
     name: divewise-ai
-    namespace: finalproject
+    namespace: divewise
     labels:
-        com.docker.compose.project: finalproject
+        com.docker.compose.project: divewise
         com.docker.compose.service: divewise-ai
 spec:
     selector:
-        com.docker.compose.project: finalproject
+        com.docker.compose.project: divewise
         com.docker.compose.service: divewise-ai
     ports:
         - name: divewise-ai-s-8502

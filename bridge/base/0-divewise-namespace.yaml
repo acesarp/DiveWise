@@ -1,0 +1,8 @@
+#! 0-divewise-namespace.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: divewise
+    labels:
+        com.docker.compose.project: divewise
