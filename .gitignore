@@ -7,9 +7,12 @@ __pycache__/
 *.jpg
 *.jpeg
 *.png
+*.dll
+*.lib
 
 # C extensions
 *.so
+*.cpp
 
 # Distribution / packaging
 .Python
