@@ -190,7 +190,7 @@ dmypy.json
 *.sqlite
 *.sqlite3
 chroma.sqlite3
-chroma_db/
+data/chroma_db/
 # Pyre type checker
 .pyre/
 
