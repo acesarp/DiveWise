@@ -70,8 +70,8 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
+*.sqlite3
+*.sqlite3-journal
 
 # Flask stuff:
 instance/
@@ -170,7 +170,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+.vs/
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -187,6 +187,8 @@ venv.bak/
 dmypy.json
 
 #chromadb
+*.sqlite
+*.sqlite3
 chroma.sqlite3
 chroma_db/
 # Pyre type checker
