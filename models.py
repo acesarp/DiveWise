@@ -1,6 +1,7 @@
 from datetime import datetime
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Optional
 
 
 class MessageRole(str, Enum):
@@ -36,7 +37,7 @@ class ChatMessage:
     content: str
     timestamp: datetime = field(default_factory=datetime.now)
     sources: list[SearchResult] = field(default_factory=list)
-    token_usage: TokenUsage | None = None
+    token_usage: Optional[TokenUsage] = None
 
 
 @dataclass
@@ -46,4 +47,3 @@ class Document:
     page_count: int
     text: str
     page_texts: list[str] = field(default_factory=list)
-
