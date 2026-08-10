@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from chromadb import PersistentClient
 from chromadb.api.models.Collection import Collection

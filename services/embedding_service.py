@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
 from collections.abc import Callable
+from typing import Optional
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -23,7 +26,7 @@ class EmbeddingService:
     def create_embeddings(
         self,
         chunks,
-        progress_callback: Callable[[int, int, str], None] | None = None,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> list[list[float]]:
         embeddings = []
         total_chunks = len(chunks)

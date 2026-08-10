@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from services.document_loader import DocumentLoader
 from services.chunker import Chunker
 from services.embedding_service import EmbeddingService
 from services.vector_store import VectorStore
 from dataclasses import dataclass
 from collections.abc import Callable
+from typing import Optional
 
 @dataclass(frozen=True)
 class KnowledgeBaseStatistics:
@@ -32,7 +35,7 @@ class KnowledgeBaseService:
         self.documents = []
         self.chunks = []
 
-    def initialize(self, progress_callback: Callable[[int, int, str], None] | None = None):
+    def initialize(self, progress_callback: Optional[Callable[[int, int, str], None]] = None):
         available_document_names = self.loader.get_document_names()
         indexed_document_names = self.vector_store.get_document_names()
         new_document_names = available_document_names - indexed_document_names

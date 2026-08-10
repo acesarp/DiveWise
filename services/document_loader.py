@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from pathlib import Path
 from collections.abc import Callable
+from typing import Optional
 from pypdf import PdfReader
 from models import Document
 from services.text_cleaner import TextCleaner
@@ -16,8 +19,8 @@ class DocumentLoader:
 
     def load_documents(
         self,
-        file_names: set[str] | None = None,
-        progress_callback: Callable[[int, int, str], None] | None = None,
+        file_names: Optional[set[str]] = None,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> list[Document]:
         documents: list[Document] = []
 
