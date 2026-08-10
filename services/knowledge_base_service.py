@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from services.document_loader import DocumentLoader
 from services.chunker import Chunker
 from services.embedding_service import EmbeddingService
