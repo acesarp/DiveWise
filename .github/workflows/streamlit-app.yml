@@ -35,9 +35,9 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .venv,env
   deploy:
     name: Deploy to VM
-    needs: check
+    needs: streamlit
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, meninoney]
+    runs-on: [self-hosted, diveWise-runner]
     concurrency:
       group: deploy-divewise
       cancel-in-progress: false
