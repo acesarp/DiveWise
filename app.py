@@ -1,12 +1,35 @@
 from __future__ import annotations
 
+import hmac
+import os
+
 import streamlit as st
+from dotenv import load_dotenv
 from pathlib import Path
 from services.chat_service import ChatService
 from services.knowledge_base_service import KnowledgeBaseService
 from models import MessageRole
 
 st.set_page_config(page_title="DiveWise AI", page_icon="🌊", layout="wide")
+load_dotenv()
+
+
+def check_password() -> bool:
+    """Gate the app behind APP_PASSWORD, since every question and upload is billed to the OpenAI account.
+    When APP_PASSWORD is not set, the app is open."""
+    password = os.getenv("APP_PASSWORD")
+    if not password or st.session_state.get("authenticated"):
+        return True
+
+    with st.form("login"):
+        typed = st.text_input("Password", type="password")
+        if st.form_submit_button("Sign in"):
+            if hmac.compare_digest(typed.encode(), password.encode()):
+                st.session_state.authenticated = True
+                st.rerun()
+            st.error("Wrong password.")
+    return False
+
 
 @st.cache_resource
 def get_knowledge_base(
@@ -281,6 +304,9 @@ def calculate_loading_percent(current: int, total: int, message: str) -> int:
 
 
 def main():
+    if not check_password():
+        return
+
     initialize_session()
     handle_document_upload()
 

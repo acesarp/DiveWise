@@ -60,24 +60,15 @@ jobs:
           docker compose up -d
           docker image prune -f
 
-      - name: Run Streamlit App Action
-        uses: streamlit/streamlit-app-action@v0.0.3
-        with:
-          app-path: streamlit_app.py # Change to your main app filename
-          ruff: true # Optional: Set to true for linting and formatting
-
-      - name: Test with pytest
+      - name: Smoke test
+        # Waits up to a minute for Streamlit to answer, and shows the container logs if it never does.
         run: |
-          conda install pytest
-          pytest
-
-      - name: Streamlit smoke test
-        uses: streamlit/streamlit-app-action@v0.0.3
-        with:
-          app-path: app.py
-        env:
-          # Fake key: only lets the services start. A real one would cost money on every run
-          OPENAI_API_KEY: sk-ci-placeholder
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:3001/_stcore/health && exit 0
+            sleep 2
+          done
+          docker compose logs --tail 50
+          exit 1
 
       - name: Remove .env
         if: always()

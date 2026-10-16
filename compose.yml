@@ -1,21 +1,24 @@
-name: DiveWise
+# Docker only accepts lowercase project and image names.
+name: divewise
 
 services:
-  DiveWise:
+  divewise:
     build: .
-    image: DiveWise
-    container_name: DiveWise
+    image: divewise
+    container_name: divewise
     restart: unless-stopped
     ports:
       - "${APP_PORT:-3001}:3001"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - APP_PASSWORD=${APP_PASSWORD}
-    # variables stored in github as secrets
+    # OPENAI_API_KEY and APP_PASSWORD: the deploy job writes .env from the GitHub secrets.
+    # No "environment:" block on purpose, since a variable left in the shell would override .env.
     env_file:
       - .env
+    # Named volumes keep the uploaded PDFs and the vector store across deploys.
+    # On first use Docker seeds them with the documents and index baked into the image.
     volumes:
-      - generated:/app/generated
+      - documents:/app/data/documents
+      - chroma:/app/data/chroma_db
 
 volumes:
-  generated:
+  documents:
+  chroma:

@@ -7,8 +7,9 @@ enableWebsocketCompression = false
 
 [theme]
 base = "dark"
-"AWSTemplateFormatVersion": "2010-09-09"[browser]
+
+[browser]
 gatherUsageStats = false
 
 [logger]
-level = "debug"
+level = "info"
