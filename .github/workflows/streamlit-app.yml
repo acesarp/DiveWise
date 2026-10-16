@@ -1,9 +1,12 @@
 name: Streamlit app
 
+permissions:
+  contents: read
 on:
   pull_request:
     branches: ["main"]
-
+  push:
+    branches: ["main"]
 jobs:
   streamlit:
     runs-on: ubuntu-latest
@@ -26,7 +29,6 @@ jobs:
         run: |
           pip install pylint
           pylint --errors-only --disable=import-error $(git ls-files '*.py')
-
       - name: Lint with flake8
         run: |
           pip install flake8
@@ -75,7 +77,6 @@ jobs:
           app-path: app.py
         env:
           # Fake key: only lets the services start. A real one would cost money on every run
-          # and, with the print in openai_service.py, would end up in the public log.
           OPENAI_API_KEY: sk-ci-placeholder
 
       - name: Remove .env
