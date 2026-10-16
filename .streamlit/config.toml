@@ -1,8 +1,14 @@
 [server]
 headless = true
-enableCORS = false
-enableXsrfProtection = false
+enableCORS = true
+enableXsrfProtection = true
+corsAllowedOrigins = ["https://guto.ca"]
 enableWebsocketCompression = false
 
 [theme]
 base = "dark"
+"AWSTemplateFormatVersion": "2010-09-09"[browser]
+gatherUsageStats = false
+
+[logger]
+level = "debug"
