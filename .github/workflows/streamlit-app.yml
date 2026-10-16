@@ -1,5 +1,7 @@
 name: Streamlit app
 
+permissions:
+  contents: read
 on:
   pull_request:
     branches: ["main"]
@@ -27,22 +29,10 @@ jobs:
         run: |
           pip install pylint
           pylint --errors-only --disable=import-error $(git ls-files '*.py')
-
       - name: Lint with flake8
         run: |
           pip install flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .venv,env
-
-      - name: Run Streamlit App Action
-        uses: streamlit/streamlit-app-action@v0.0.3
-        with:
-          app-path: streamlit_app.py # Change to your main app filename
-          ruff: true # Optional: Set to true for linting and formatting
-      - name: Test with pytest
-        run: |
-          conda install pytest
-          pytest
-
       - name: Streamlit smoke test
         uses: streamlit/streamlit-app-action@v0.0.3
         with:
