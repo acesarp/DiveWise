@@ -49,5 +49,4 @@ jobs:
           app-path: app.py
         env:
           # Fake key: only lets the services start. A real one would cost money on every run
-          # and, with the print in openai_service.py, would end up in the public log.
           OPENAI_API_KEY: sk-ci-placeholder
