@@ -1,0 +1,21 @@
+name: DiveWise
+
+services:
+  DiveWise:
+    build: .
+    image: DiveWise
+    container_name: DiveWise
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8502}:8502"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - APP_PASSWORD=${APP_PASSWORD}
+    # variables stored in github as secrets
+    env_file:
+      - .env
+    volumes:
+      - generated:/app/generated
+
+volumes:
+  generated:
