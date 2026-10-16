@@ -37,7 +37,7 @@ jobs:
     name: Deploy to VM
     needs: streamlit
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, diveWise-runner]
+    runs-on: [self-hosted, diveWise]
     concurrency:
       group: deploy-divewise
       cancel-in-progress: false
