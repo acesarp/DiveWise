@@ -33,6 +33,44 @@ jobs:
         run: |
           pip install flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .venv,env
+  deploy:
+    name: Deploy to VM
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, meninoney]
+    concurrency:
+      group: deploy-divewise
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write .env from secrets
+        # compose reads the keys from .env (env_file). The file is readable only by the runner user.
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+        run: |
+          umask 077
+          printf 'OPENAI_API_KEY=%s\nAPP_PASSWORD=%s\n' "$OPENAI_API_KEY" "$APP_PASSWORD" > .env
+
+      - name: Build and restart
+        # The image is built on the VM itself, so no registry or registry login is involved.
+        run: |
+          docker compose build
+          docker compose up -d
+          docker image prune -f
+
+      - name: Run Streamlit App Action
+        uses: streamlit/streamlit-app-action@v0.0.3
+        with:
+          app-path: streamlit_app.py # Change to your main app filename
+          ruff: true # Optional: Set to true for linting and formatting
+
+      - name: Test with pytest
+        run: |
+          conda install pytest
+          pytest
+
       - name: Streamlit smoke test
         uses: streamlit/streamlit-app-action@v0.0.3
         with:
@@ -40,3 +78,7 @@ jobs:
         env:
           # Fake key: only lets the services start. A real one would cost money on every run
           OPENAI_API_KEY: sk-ci-placeholder
+
+      - name: Remove .env
+        if: always()
+        run: rm -f .env
