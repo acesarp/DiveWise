@@ -3,7 +3,8 @@ name: Streamlit app
 on:
   pull_request:
     branches: ["main"]
-
+  push:
+    branches: ["main"]
 jobs:
   streamlit:
     runs-on: ubuntu-latest
