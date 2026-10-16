@@ -8,7 +8,7 @@ on:
   push:
     branches: ["main"]
 jobs:
-  streamlit:
+  streamlit-setup:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,9 +35,9 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .venv,env
   deploy:
     name: Deploy to VM
-    needs: streamlit
+    needs: streamlit-setup
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, diveWise]
+    runs-on: [self-hosted, divewise]
     concurrency:
       group: deploy-divewise
       cancel-in-progress: false
